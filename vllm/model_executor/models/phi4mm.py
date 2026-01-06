@@ -1246,5 +1246,11 @@ class Phi4MMForCausalLM(nn.Module, SupportsLoRA, SupportsMultiModal):
             tower_model=["vision_encoder", "embed_tokens_extend"],
         )
 
+    def get_num_mm_encoder_tokens(self, num_image_tokens: int) -> int:
+        return num_image_tokens
+
+    def get_num_mm_connector_tokens(self, num_vision_tokens: int) -> int:
+        return num_vision_tokens
+
     def get_language_model(self) -> torch.nn.Module:
         return self.model
