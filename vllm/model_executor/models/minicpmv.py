@@ -1181,6 +1181,27 @@ class MiniCPMVBaseModel(nn.Module, SupportsMultiModal, SupportsPP):
             language_model="llm", connector="resampler", tower_model="vpm"
         )
 
+    def get_num_mm_encoder_tokens(self, num_image_tokens: int) -> int:
+        # Approximate the number of pre-resampler tokens using slice counts and
+        # a patch-level upper bound derived from the default image size.
+        query_tokens = max(self.config.query_num, 1)
+        num_slices = max(1, math.ceil(num_image_tokens / query_tokens))
+
+        patch_h, patch_w = self.vpm.patch_embed.patch_size
+        image_size = getattr(self.config, "image_size", patch_h * patch_w)
+        patch_tokens = math.ceil(image_size / patch_h) * math.ceil(image_size / patch_w)
+
+        return num_slices * patch_tokens
+
+    def get_num_mm_connector_tokens(self, num_vision_tokens: int) -> int:
+        query_tokens = max(self.config.query_num, 1)
+        patch_h, patch_w = self.vpm.patch_embed.patch_size
+        image_size = getattr(self.config, "image_size", patch_h * patch_w)
+        patch_tokens = math.ceil(image_size / patch_h) * math.ceil(image_size / patch_w)
+
+        num_slices = max(1, math.ceil(num_vision_tokens / patch_tokens))
+        return num_slices * query_tokens
+
     def init_llm(
         self,
         vllm_config: VllmConfig,
