@@ -741,6 +741,15 @@ class QwenVLForConditionalGeneration(
             tower_model="transformer.visual.transformer",
         )
 
+    def get_num_mm_encoder_tokens(self, num_image_tokens: int) -> int:
+        # Attn pooling downsamples vision tokens by a fixed 2x2 window.
+        merge_size = 2
+        return num_image_tokens * (merge_size**2)
+
+    def get_num_mm_connector_tokens(self, num_vision_tokens: int) -> int:
+        merge_size = 2
+        return (num_vision_tokens + merge_size**2 - 1) // (merge_size**2)
+
     @classmethod
     def get_placeholder_str(cls, modality: str, i: int) -> str | None:
         if modality.startswith("image"):
