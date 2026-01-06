@@ -577,6 +577,14 @@ class GLM4VForCausalLM(
             tower_model="transformer.vision.transformer",
         )
 
+    def get_num_mm_encoder_tokens(self, num_image_tokens: int) -> int:
+        merge_size = self.config.vision_config["spatial_merge_size"]
+        return num_image_tokens * (merge_size**2)
+
+    def get_num_mm_connector_tokens(self, num_vision_tokens: int) -> int:
+        merge_size = self.config.vision_config["spatial_merge_size"]
+        return (num_vision_tokens + merge_size**2 - 1) // (merge_size**2)
+
     @classmethod
     def get_placeholder_str(cls, modality: str, i: int) -> str | None:
         if modality.startswith("image"):
